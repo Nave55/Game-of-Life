@@ -112,6 +112,7 @@ class Conway extends hxd.App {
     }
     
     override function update(dt:Float) {
+        super.update(dt);
         if (hxd.Key.isPressed(hxd.Key.R) && !running) {
             fillRandom();
         } else if (hxd.Key.isPressed(hxd.Key.C) && !running) {
@@ -122,8 +123,8 @@ class Conway extends hxd.App {
 
         elapsedTime += dt; 
         if (elapsedTime >= updateInterval) { 
-            updateSim(); 
+            updateSim();
             elapsedTime -= updateInterval; // Reset elapsed time 
-        }
+        }       
     }
 }
