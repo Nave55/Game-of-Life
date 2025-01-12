@@ -23,20 +23,18 @@ class Conway extends hxd.App {
         if (!running) {
             for (row in 0...ROWS) {
                 for (column in 0...COLS) {
-                    var random = gen.random(4);
-                    if (random == 1) cells[row][column] = 1;
-                    else cells[row][column] = 0;
+                    cells[row][column] = (gen.random(4) == 1) ? 1 : 0;
                 }
             }
+            drawCells();
         }
-        drawCells();
     }
 
     public function drawCells() {
         graphics.clear(); // Clear previous drawing
         for (row in 0...ROWS) {
             for (column in 0...COLS) {
-                var color = if (cells[row][column] == 1) GREEN else DARK_GREY;
+                var color = (cells[row][column] == 1) ? GREEN : DARK_GREY;
                 graphics.beginFill(color);
                 graphics.drawRect(column * CELL_SIZE, row * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
                 graphics.endFill();
@@ -51,17 +49,17 @@ class Conway extends hxd.App {
                     cells[row][column] = 0;
                 }
             }
-            drawCells(); // Redraw after clearing
+            drawCells();
         }
     }
 
     public function countLiveNbrs(row: Int, column: Int): Int {
         var live_neighbors = 0;
-        var neighbor_offsets = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
-        for (offset in neighbor_offsets) {
-            var new_row = (row + offset[0] + ROWS) % ROWS; // Wrap around for edge cases
-            var new_column = (column + offset[1] + COLS) % COLS; // Wrap around for edge cases
-            if (cells[new_row][new_column] == 1) live_neighbors++;
+        var offsets = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+        for (offset in offsets) {
+            var new_row = (row + offset[0] + ROWS) % ROWS;
+            var new_column = (column + offset[1] + COLS) % COLS;
+            live_neighbors += cells[new_row][new_column];
         }
         return live_neighbors;
     }
@@ -73,24 +71,24 @@ class Conway extends hxd.App {
                     var live_neighbors = countLiveNbrs(row, column);
                     var cell_value = cells[row][column];
     
-                    if (cell_value == 1) {
-                        if (live_neighbors > 3 || live_neighbors < 2) tmp_cells[row][column] = 0;
-                        else tmp_cells[row][column] = 1;
-                    }
-                    else {
-                        if (live_neighbors == 3) tmp_cells[row][column] = 1;
-                        else tmp_cells[row][column] = 0;
-                    }
+                    tmp_cells[row][column] = if (cell_value == 1) {
+                        if (live_neighbors < 2 || live_neighbors > 3) 0 else 1;
+                    } else {
+                        if (live_neighbors == 3) 1 else 0;
+                    };
                 }
             }
             for (row in 0...ROWS) {
                 for (column in 0...COLS) {
                     if (cells[row][column] != tmp_cells[row][column]) {
                         cells[row][column] = tmp_cells[row][column];
+                        var color = (cells[row][column] == 1) ? GREEN : DARK_GREY;
+                        graphics.beginFill(color);
+                        graphics.drawRect(column * CELL_SIZE, row * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
+                        graphics.endFill();
                     }
                 }
             }
-            drawCells(); // Redraw the updated grid
         }
     }
 
@@ -103,15 +101,15 @@ class Conway extends hxd.App {
         bg.beginFill(GREY);
         bg.drawRect(0, 0, s2d.width, s2d.height);
         bg.endFill();
+        graphics = new h2d.Graphics(s2d);
 
         cells = [for (_ in 0...ROWS) [for (_ in 0...COLS) 0]];
         tmp_cells = [for (i in cells) [for (j in i) j]];
 
-        graphics = new h2d.Graphics(s2d);
         drawCells();
     }
     
-    override function update(dt:Float) {
+    override function update(dt: Float) {
         super.update(dt);
         if (hxd.Key.isPressed(hxd.Key.R) && !running) {
             fillRandom();
