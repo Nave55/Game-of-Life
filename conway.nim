@@ -105,9 +105,9 @@ proc drawGame =
 
 proc updateGame = 
   if running:
-    setWindowTitle(cstring(&"Game of Life is Running at {fps}"))
+    setWindowTitle(&"Game of Life is Running at {fps}")
   else:
-    setWindowTitle(cstring("Game of Life is Paused"))
+    setWindowTitle("Game of Life is Paused")
   controls()
   updateSim()
   drawGame()
