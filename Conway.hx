@@ -21,6 +21,15 @@ class Conway extends hxd.App {
         new Conway();
     }
 
+    function drawCells() {
+        for (row in 0...ROWS) {
+            for (col in 0...COLS) {
+                var color = (cells[row][col] == 1) ? green_tile : dark_grey_tile;
+                elements[row][col].t = color;
+            }
+        }
+    }
+
     function fillRandom() {
         if (!running) {
             for (row in 0...ROWS) {
@@ -29,15 +38,6 @@ class Conway extends hxd.App {
                 }
             }
             drawCells();
-        }
-    }
-
-    function drawCells() {
-        for (row in 0...ROWS) {
-            for (col in 0...COLS) {
-                var color = (cells[row][col] == 1) ? green_tile : dark_grey_tile;
-                elements[row][col].t = color;
-            }
         }
     }
 
