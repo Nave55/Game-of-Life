@@ -7,6 +7,7 @@ class Conway extends hxd.App {
     static inline var COLS = Std.int(WIDTH / CELL_SIZE);
 
     // globals
+    var elements: Array<Array<h2d.SpriteBatch.BatchElement>> = [];
     var cells: Array<Array<Int>> = [];
     var tmp_cells: Array<Array<Int>> = [];
     var running = false;
@@ -15,9 +16,6 @@ class Conway extends hxd.App {
     var updateInterval: Float = 1.0 / 12.0;
     var green_tile: h2d.Tile;
     var dark_grey_tile: h2d.Tile;
-    var batch: h2d.SpriteBatch;
-    var elements: Array<Array<h2d.SpriteBatch.BatchElement>> = [];
-
 
     static function main() {
         new Conway();
@@ -103,7 +101,7 @@ class Conway extends hxd.App {
         green_tile = h2d.Tile.fromColor(0x00e430, CELL_SIZE - 1, CELL_SIZE - 1);
         dark_grey_tile = h2d.Tile.fromColor(0x1d1d1d, CELL_SIZE - 1, CELL_SIZE - 1);
 
-        batch = new h2d.SpriteBatch(dark_grey_tile, s2d);
+        var batch = new h2d.SpriteBatch(dark_grey_tile, s2d);
         for (row in 0...ROWS) {
             var rowElems = [];
             for (col in 0...COLS) {
