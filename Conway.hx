@@ -1,24 +1,23 @@
-typedef AAI = Array<Array<Int>>;
-
 class Conway extends hxd.App {
     // constants 
     static inline var CELL_SIZE = 6;
     static inline var HEIGHT = 1000;
     static inline var WIDTH = 1000;
-    static inline var GREEN = 0x00e430;
-    static inline var GREY = 0x373737;
-    static inline var DARK_GREY = 0x1d1d1d;
     static inline var ROWS = Std.int(HEIGHT / CELL_SIZE);
     static inline var COLS = Std.int(WIDTH / CELL_SIZE);
 
     // globals
-    var cells: AAI = [];
-    var tmp_cells: AAI = [];
+    var cells: Array<Array<Int>> = [];
+    var tmp_cells: Array<Array<Int>> = [];
     var running = false;
     var gen = hxd.Rand.create();
-    var graphics: h2d.Graphics;
     var elapsedTime: Float = 0.0;
     var updateInterval: Float = 1.0 / 12.0;
+    var green_tile: h2d.Tile;
+    var dark_grey_tile: h2d.Tile;
+    var batch: h2d.SpriteBatch;
+    var elements: Array<Array<h2d.SpriteBatch.BatchElement>> = [];
+
 
     static function main() {
         new Conway();
@@ -36,13 +35,10 @@ class Conway extends hxd.App {
     }
 
     function drawCells() {
-        graphics.clear(); // Clear previous drawing
         for (row in 0...ROWS) {
-            for (column in 0...COLS) {
-                var color = (cells[row][column] == 1) ? GREEN : DARK_GREY;
-                graphics.beginFill(color);
-                graphics.drawRect(column * CELL_SIZE, row * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
-                graphics.endFill();
+            for (col in 0...COLS) {
+                var color = (cells[row][col] == 1) ? green_tile : dark_grey_tile;
+                elements[row][col].t = color;
             }
         }
     }
@@ -84,13 +80,11 @@ class Conway extends hxd.App {
                 }
            }
             for (row in 0...ROWS) {
-                for (column in 0...COLS) {
-                    if (cells[row][column] != tmp_cells[row][column]) {
-                        cells[row][column] = tmp_cells[row][column];
-                        var color = (cells[row][column] == 1) ? GREEN : DARK_GREY;
-                        graphics.beginFill(color);
-                        graphics.drawRect(column * CELL_SIZE, row * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
-                        graphics.endFill();
+                for (col in 0...COLS) {
+                    if (cells[row][col] != tmp_cells[row][col]) {
+                        cells[row][col] = tmp_cells[row][col];
+                        var color = (cells[row][col] == 1) ? green_tile : dark_grey_tile;
+                        elements[row][col].t = color;
                     }
                 }
             }
@@ -100,16 +94,29 @@ class Conway extends hxd.App {
     override function init() {
         super.init();
 
+        trace(ROWS, COLS);
         var bg = new h2d.Graphics(s2d);
-        bg.beginFill(GREY);
-        bg.drawRect(0, 0, s2d.width, s2d.height);
+        bg.beginFill(0x373737);
+        bg.drawRect(0, 0, WIDTH, HEIGHT);
         bg.endFill();
-        graphics = new h2d.Graphics(s2d);
+
+        green_tile = h2d.Tile.fromColor(0x00e430, CELL_SIZE - 1, CELL_SIZE - 1);
+        dark_grey_tile = h2d.Tile.fromColor(0x1d1d1d, CELL_SIZE - 1, CELL_SIZE - 1);
+
+        batch = new h2d.SpriteBatch(dark_grey_tile, s2d);
+        for (row in 0...ROWS) {
+            var rowElems = [];
+            for (col in 0...COLS) {
+                var elem = batch.alloc(dark_grey_tile);
+                elem.x = col * CELL_SIZE;
+                elem.y = row * CELL_SIZE;
+                rowElems.push(elem);
+            }
+            elements.push(rowElems);
+        }
 
         cells = [for (_ in 0...ROWS) [for (_ in 0...COLS) 0]];
         tmp_cells = [for (i in cells) [for (j in i) j]];
-
-        drawCells();
     }
     
     override function update(dt: Float) {
