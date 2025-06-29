@@ -24,8 +24,7 @@ class Conway extends hxd.App {
     function drawCells() {
         for (row in 0...ROWS) {
             for (col in 0...COLS) {
-                var color = (cells[row][col] == 1) ? green_tile : dark_grey_tile;
-                elements[row][col].t = color;
+                elements[row][col].t = (cells[row][col] == 1) ? green_tile : dark_grey_tile;
             }
         }
     }
@@ -81,8 +80,7 @@ class Conway extends hxd.App {
                 for (col in 0...COLS) {
                     if (cells[row][col] != tmp_cells[row][col]) {
                         cells[row][col] = tmp_cells[row][col];
-                        var color = (cells[row][col] == 1) ? green_tile : dark_grey_tile;
-                        elements[row][col].t = color;
+                        elements[row][col].t = (cells[row][col] == 1) ? green_tile : dark_grey_tile;
                     }
                 }
             }
@@ -92,12 +90,7 @@ class Conway extends hxd.App {
     override function init() {
         super.init();
 
-        trace(ROWS, COLS);
-        var bg = new h2d.Graphics(s2d);
-        bg.beginFill(0x373737);
-        bg.drawRect(0, 0, WIDTH, HEIGHT);
-        bg.endFill();
-
+        engine.backgroundColor = 0x373737;
         green_tile = h2d.Tile.fromColor(0x00e430, CELL_SIZE - 1, CELL_SIZE - 1);
         dark_grey_tile = h2d.Tile.fromColor(0x1d1d1d, CELL_SIZE - 1, CELL_SIZE - 1);
 
