@@ -54,6 +54,7 @@ class Conway extends hxd.App {
     function countLiveNbrs(row: Int, column: Int): Int {
         var live_neighbors = 0;
         var offsets = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+
         for (offset in offsets) {
             var new_row = (row + offset[0] + ROWS) % ROWS;
             var new_column = (column + offset[1] + COLS) % COLS;
@@ -65,17 +66,18 @@ class Conway extends hxd.App {
     function updateSim() {
         if (running) {
             for (row in 0...ROWS) {
-                for (column in 0...COLS) {
-                    var live_neighbors = countLiveNbrs(row, column);
-                    var cell_value = cells[row][column];
+                for (col in 0...COLS) {
+                    var live_neighbors = countLiveNbrs(row, col);
+                    var cell_value = cells[row][col];
     
-                    tmp_cells[row][column] = if (cell_value == 1) {
+                    tmp_cells[row][col] = if (cell_value == 1) {
                         if (live_neighbors < 2 || live_neighbors > 3) 0 else 1;
                     } else {
                         if (live_neighbors == 3) 1 else 0;
                     };
                 }
            }
+
             for (row in 0...ROWS) {
                 for (col in 0...COLS) {
                     if (cells[row][col] != tmp_cells[row][col]) {
@@ -112,14 +114,10 @@ class Conway extends hxd.App {
     
     override function update(dt: Float) {
         super.update(dt);
-        if (hxd.Key.isPressed(hxd.Key.R) && !running) {
-            fillRandom();
-        } else if (hxd.Key.isPressed(hxd.Key.C) && !running) {
-            clearGrid();
-        } else if (hxd.Key.isPressed(hxd.Key.ENTER)) {
-            running = !running;
-        }
-
+        if (hxd.Key.isPressed(hxd.Key.R) && !running) fillRandom();
+        else if (hxd.Key.isPressed(hxd.Key.C) && !running) clearGrid();
+        else if (hxd.Key.isPressed(hxd.Key.ENTER)) running = !running;
+        
         elapsedTime += dt; 
         if (elapsedTime >= updateInterval) { 
             updateSim();
