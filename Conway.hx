@@ -1,8 +1,8 @@
 class Conway extends hxd.App {
     // constants 
     static inline var CELL_SIZE = 6;
-    static inline var HEIGHT = 1000;
-    static inline var WIDTH = 1000;
+    static inline var HEIGHT = 960;
+    static inline var WIDTH = 960;
     static inline var ROWS = Std.int(HEIGHT / CELL_SIZE);
     static inline var COLS = Std.int(WIDTH / CELL_SIZE);
 
@@ -115,8 +115,10 @@ class Conway extends hxd.App {
     override function update(dt: Float) {
         super.update(dt);
         if (hxd.Key.isPressed(hxd.Key.R) && !running) fillRandom();
-        else if (hxd.Key.isPressed(hxd.Key.C) && !running) clearGrid();
-        else if (hxd.Key.isPressed(hxd.Key.ENTER)) running = !running;
+        if (hxd.Key.isPressed(hxd.Key.C) && !running) clearGrid();
+        if (hxd.Key.isPressed(hxd.Key.ENTER)) running = !running;
+        if (hxd.Key.isPressed(hxd.Key.S)) updateInterval += .01;
+        if (hxd.Key.isPressed(hxd.Key.F) && updateInterval >= .01) updateInterval -= .01;
         
         elapsedTime += dt; 
         if (elapsedTime >= updateInterval) { 
