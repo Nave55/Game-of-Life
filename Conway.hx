@@ -117,8 +117,11 @@ class Conway extends hxd.App {
         if (hxd.Key.isPressed(hxd.Key.R) && !running) fillRandom();
         if (hxd.Key.isPressed(hxd.Key.C) && !running) clearGrid();
         if (hxd.Key.isPressed(hxd.Key.ENTER)) running = !running;
-        if (hxd.Key.isPressed(hxd.Key.S)) updateInterval += .01;
-        if (hxd.Key.isPressed(hxd.Key.F) && updateInterval >= .01) updateInterval -= .01;
+        if (hxd.Key.isPressed(hxd.Key.S)) updateInterval += .005;
+        if (hxd.Key.isPressed(hxd.Key.F) && updateInterval >= .005) updateInterval -= .005;
+
+        var fps = (60 / (60 * updateInterval));
+        hxd.Window.getInstance().title = 'Conway running at ${fps} fps';
         
         elapsedTime += dt; 
         if (elapsedTime >= updateInterval) { 
