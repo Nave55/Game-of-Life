@@ -1,17 +1,19 @@
 class Conway extends hxd.App {
+    // constants 
     static inline var CELL_SIZE = 6;
     static inline var HEIGHT = 960;
     static inline var WIDTH = 960;
     static inline var ROWS = Std.int(HEIGHT / CELL_SIZE);
     static inline var COLS = Std.int(WIDTH / CELL_SIZE);
 
+    // globals
     var elements: Array<Array<h2d.SpriteBatch.BatchElement>> = [];
     var cells: Array<Array<Int>> = [];
     var tmp_cells: Array<Array<Int>> = [];
     var running = false;
     var gen = hxd.Rand.create();
-    var elapsedTime: Float = 0.0;
-    var updateInterval: Float = 1.0 / 12.0;
+    var elapsedTime: Int = 0;
+    var updateInterval: Int = 5;
     var green_tile: h2d.Tile;
     var dark_grey_tile: h2d.Tile;
 
@@ -115,16 +117,15 @@ class Conway extends hxd.App {
         if (hxd.Key.isPressed(hxd.Key.R) && !running) fillRandom();
         if (hxd.Key.isPressed(hxd.Key.C) && !running) clearGrid();
         if (hxd.Key.isPressed(hxd.Key.ENTER)) running = !running;
-        if (hxd.Key.isPressed(hxd.Key.S)) updateInterval += .005;
-        if (hxd.Key.isPressed(hxd.Key.F) && updateInterval >= .005) updateInterval -= .005;
+        if (hxd.Key.isPressed(hxd.Key.S)) updateInterval += 1;
+        if (hxd.Key.isPressed(hxd.Key.F) && updateInterval >= 2) updateInterval -= 1;
 
-        var fps = (60 / (60 * updateInterval));
-        hxd.Window.getInstance().title = 'Conway running at ${fps} fps';
+        hxd.Window.getInstance().title = 'Conway running at ${60 / updateInterval} fps';
         
-        elapsedTime += dt; 
+        elapsedTime++; 
         if (elapsedTime >= updateInterval) { 
             updateSim();
-            elapsedTime -= updateInterval; // Reset elapsed time 
+            elapsedTime -= updateInterval; 
         }       
     }
 }
