@@ -1,12 +1,10 @@
 class Conway extends hxd.App {
-    // constants 
     static inline var CELL_SIZE = 6;
     static inline var HEIGHT = 960;
     static inline var WIDTH = 960;
     static inline var ROWS = Std.int(HEIGHT / CELL_SIZE);
     static inline var COLS = Std.int(WIDTH / CELL_SIZE);
 
-    // globals
     var elements: Array<Array<h2d.SpriteBatch.BatchElement>> = [];
     var cells: Array<Array<Int>> = [];
     var tmp_cells: Array<Array<Int>> = [];
