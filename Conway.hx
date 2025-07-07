@@ -10,8 +10,6 @@ class Conway extends hxd.App {
     var tmp_cells: Array<Array<Int>> = [];
     var running = false;
     var gen = hxd.Rand.create();
-    var elapsedTime: Int = 0;
-    var updateInterval: Int = 5;
     var green_tile: h2d.Tile;
     var dark_grey_tile: h2d.Tile;
 
@@ -112,6 +110,9 @@ class Conway extends hxd.App {
     
     override function update(dt: Float) {
         super.update(dt);
+        static var elapsedTime: Int = 0;
+        static var updateInterval: Int = 5;
+
         if (hxd.Key.isPressed(hxd.Key.R) && !running) fillRandom();
         if (hxd.Key.isPressed(hxd.Key.C) && !running) clearGrid();
         if (hxd.Key.isPressed(hxd.Key.ENTER)) running = !running;
