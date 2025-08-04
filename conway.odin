@@ -14,9 +14,9 @@ package conway
 
 import rl "vendor:raylib"
 
-WIDTH ::              1020
-HEIGHT ::             1020
-CELL_SIZE ::          5
+WIDTH ::              960
+HEIGHT ::             960
+CELL_SIZE ::          6
 ROWS ::               int(HEIGHT / CELL_SIZE)
 COLUMNS ::            int(WIDTH / CELL_SIZE)
 GREY: rl.Color :      {29, 29, 29, 255}
@@ -37,9 +37,7 @@ main :: proc() {
 drawCells :: proc() {
     for row in 0..<ROWS {
         for column in 0..<COLUMNS {
-            color: rl.Color
-            if  cells[row][column] == 1  do color = rl.GREEN
-            else do color = DARK_GREY
+            color := cells[row][column] == 1 ? rl.GREEN : DARK_GREY
             rl.DrawRectangle(i32(column * CELL_SIZE), 
                              i32(row * CELL_SIZE),
                              i32(CELL_SIZE - 1), 
