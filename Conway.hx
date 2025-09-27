@@ -12,7 +12,6 @@ class Conway extends hxd.App {
     var gen = hxd.Rand.create();
     var green_tile: h2d.Tile;
     var dark_grey_tile: h2d.Tile;
-
     var updatesPerSecond:Float = 12;
     var updateInterval:Float = 1.0 / 12;
     var elapsedTime:Float = 0;
@@ -143,4 +142,5 @@ class Conway extends hxd.App {
         }
     }
 }
+
 
