@@ -2,7 +2,7 @@ module main
 
 import gg
 import rand
-import math
+import time
 
 const width = 720
 const height = 720
@@ -19,6 +19,10 @@ mut:
 	running   bool
 	cells     [][]int
 	tmp_cells [][]int
+	updates_per_sec f64 = 12.0
+	update_interval f64 = 1.0 / 12.0
+	acc             f64
+	last_nano       i64
 }
 
 fn main() {
@@ -31,22 +35,34 @@ fn main() {
 		user_data:     game
 		event_fn:      on_event
 		frame_fn:      frame
+		swap_interval: 1
 	)
 
 	game.init_game()
+	game.last_nano = time.now().unix_nano()
 	game.gg.run()
 }
 
 fn (mut game Game) init_game() {
-	game.cells = [][]int{len: cols, init: []int{len: rows, init: 0}}
-	game.tmp_cells = [][]int{len: cols, init: []int{len: rows, init: 0}}
+	game.cells = [][]int{len: rows, init: []int{len: cols, init: 0}}
+	game.tmp_cells = [][]int{len: rows, init: []int{len: cols, init: 0}}
 }
 
 fn frame(mut game Game) {
-		game.gg.begin()
+	game.gg.begin()
 
-		game.update_game()
-		game.gg.end()
+	now := time.now().unix_nano()
+	dt := f64(now - game.last_nano) / 1e9
+	game.last_nano = now
+	game.acc += dt
+
+	for game.acc >= game.update_interval {
+		update_sim(mut game)
+		game.acc -= game.update_interval
+	}
+
+	draw_cells(mut game)
+	game.gg.end()
 }
 
 fn (mut game Game) key_down(key gg.KeyCode) ! {
@@ -58,10 +74,10 @@ fn (mut game Game) key_down(key gg.KeyCode) ! {
 			game.running = !game.running
 		}
 		.r {
-			fill_random(mut game.cells, game.running)
+			fill_random(mut game)
 		}
 		.c {
-			clear_grid(mut game.cells, game.running)
+			clear_grid(mut game)
 		}
 		else {}
 	}
@@ -73,82 +89,63 @@ fn on_event(e &gg.Event, mut game Game) {
 	}
 }
 
-fn (mut game Game) update_game() {
-	if game.gg.frame % 5 == 0 {
-		update_sim(mut game)
-	}
-	draw_cells(mut game)
-}
-
 fn draw_cells(mut game Game) {
 	for row in 0 .. rows {
 		for column in 0 .. cols {
-			mut color := gg.Color{}
-			if game.cells[row][column] == 1 {
-				color = green
-			} else {
-				color = dark_grey
-			}
+			color := if game.cells[row][column] == 1 { green } else { dark_grey }
 			game.gg.draw_rect_filled(column * cell_size, row * cell_size, cell_size - 1,
-					cell_size - 1, color)
+				cell_size - 1, color)
 		}
 	}
 }
 
-fn fill_random(mut cells [][]int, running bool) {
-	if !running {
+fn fill_random(mut game Game) {
+	if !game.running {
 		for row in 0 .. rows {
 			for column in 0 .. cols {
 				random := rand.int_in_range(0, 3) or { 0 }
-				cells[row][column] = if random == 1 { 1 } else { 0 }
+				game.cells[row][column] = if random == 1 { 1 } else { 0 }
 			}
 		}
 	}
 }
 
-fn clear_grid(mut cells [][]int, running bool) {
-	if !running {
+fn clear_grid(mut game Game) {
+	if !game.running {
 		for row in 0 .. rows {
 			for column in 0 .. cols {
-				cells[row][column] = 0
+				game.cells[row][column] = 0
 			}
 		}
 	}
 }
 
-fn count_live_nbrs(mut cells [][]int, row int, column int) int {
-	nbr_offsets := [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1],
-		[1, -1], [1, 0], [1, 1]]
-	mut live_nbrs := 0
-	for offset in nbr_offsets {
-		new_row := int(math.modulo_floored(row + offset[0], rows))
-		new_column := int(math.modulo_floored(column + offset[1], cols))
-		if cells[new_row][new_column] == 1 {
-			live_nbrs += 1
-		}
-	}
-	return live_nbrs
+fn count_live_nbrs(cells [][]int, row int, column int) int {
+	r0 := (row - 1 + rows) % rows
+	r1 := row
+	r2 := (row + 1) % rows
+	c0 := (column - 1 + cols) % cols
+	c1 := column
+	c2 := (column + 1) % cols
+
+	row0 := cells[r0]
+	row1 := cells[r1]
+	row2 := cells[r2]
+
+	return row0[c0] + row0[c1] + row0[c2] + row1[c0] + row1[c2] + row2[c0] + row2[c1] + row2[c2]
 }
 
 fn update_sim(mut game Game) {
 	if game.running {
 		for row in 0 .. rows {
 			for column in 0 .. cols {
-				live_nbrs := count_live_nbrs(mut game.cells, row, column)
+				live_nbrs := count_live_nbrs(game.cells, row, column)
 				cell_value := game.cells[row][column]
 
 				if cell_value == 1 {
-					if live_nbrs > 3 || live_nbrs < 2 {
-						game.tmp_cells[row][column] = 0
-					} else {
-						game.tmp_cells[row][column] = 1
-					}
+					game.tmp_cells[row][column] = if live_nbrs < 2 || live_nbrs > 3 { 0 } else { 1 }
 				} else {
-					if live_nbrs == 3 {
-						game.tmp_cells[row][column] = 1
-					} else {
-						game.tmp_cells[row][column] = 0
-					}
+					game.tmp_cells[row][column] = if live_nbrs == 3 { 1 } else { 0 }
 				}
 			}
 		}
