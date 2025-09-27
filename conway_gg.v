@@ -1,7 +1,6 @@
 module main
 
 import gg
-import gx
 import rand
 import math
 
@@ -10,15 +9,14 @@ const height = 720
 const cell_size = 6
 const rows = height / cell_size
 const cols = width / cell_size
-const green = gx.rgba(0, 228, 48, 255)
-const grey = gx.rgba(29, 29, 29, 255)
-const dark_grey = gx.rgba(55, 55, 55, 255)
+const green = gg.rgb(0, 228, 48)
+const grey = gg.rgb(29, 29, 29)
+const dark_grey = gg.rgb(55, 55, 55)
 
 struct Game {
 mut:
 	gg        &gg.Context = unsafe { nil }
 	running   bool
-	fps       int = 12
 	cells     [][]int
 	tmp_cells [][]int
 }
@@ -33,7 +31,6 @@ fn main() {
 		user_data:     game
 		event_fn:      on_event
 		frame_fn:      frame
-		swap_interval: 1
 	)
 
 	game.init_game()
@@ -86,7 +83,7 @@ fn (mut game Game) update_game() {
 fn draw_cells(mut game Game) {
 	for row in 0 .. rows {
 		for column in 0 .. cols {
-			mut color := gx.Color{}
+			mut color := gg.Color{}
 			if game.cells[row][column] == 1 {
 				color = green
 			} else {
