@@ -1,4 +1,5 @@
 class Conway extends hxd.App {
+
     static inline var CELL_SIZE = 6;
     static inline var HEIGHT = 960;
     static inline var WIDTH = 960;
@@ -12,6 +13,10 @@ class Conway extends hxd.App {
     var gen = hxd.Rand.create();
     var green_tile: h2d.Tile;
     var dark_grey_tile: h2d.Tile;
+
+    var updatesPerSecond:Float = 12;
+    var updateInterval:Float = 1.0 / 12;
+    var elapsedTime:Float = 0;
 
     static function main() {
         new Conway();
@@ -49,45 +54,62 @@ class Conway extends hxd.App {
 
     function countLiveNbrs(row: Int, column: Int): Int {
         var live_neighbors = 0;
-        var offsets = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+        final r0 = (row - 1 + ROWS) % ROWS;
+        final r1 = row;
+        final r2 = (row + 1) % ROWS;
+        final c0 = (column - 1 + COLS) % COLS;
+        final c1 = column;
+        final c2 = (column + 1) % COLS;
 
-        for (offset in offsets) {
-            var new_row = (row + offset[0] + ROWS) % ROWS;
-            var new_column = (column + offset[1] + COLS) % COLS;
-            live_neighbors += cells[new_row][new_column];
-        }
+        live_neighbors += cells[r0][c0];
+        live_neighbors += cells[r0][c1];
+        live_neighbors += cells[r0][c2];
+        live_neighbors += cells[r1][c0];
+        live_neighbors += cells[r1][c2];
+        live_neighbors += cells[r2][c0];
+        live_neighbors += cells[r2][c1];
+        live_neighbors += cells[r2][c2];
+
         return live_neighbors;
     }
 
     function updateSim() {
-        if (running) {
-            for (row in 0...ROWS) {
-                for (col in 0...COLS) {
-                    var live_neighbors = countLiveNbrs(row, col);
-                    var cell_value = cells[row][col];
-    
-                    tmp_cells[row][col] = if (cell_value == 1) {
-                        if (live_neighbors < 2 || live_neighbors > 3) 0 else 1;
-                    } else {
-                        if (live_neighbors == 3) 1 else 0;
-                    };
-                }
-           }
+        if (!running) return;
 
-            for (row in 0...ROWS) {
-                for (col in 0...COLS) {
-                    if (cells[row][col] != tmp_cells[row][col]) {
-                        cells[row][col] = tmp_cells[row][col];
-                        elements[row][col].t = (cells[row][col] == 1) ? green_tile : dark_grey_tile;
-                    }
+        var changed: Array<Int> = [];
+
+        for (row in 0...ROWS) {
+            final rowCells = cells[row];
+            final rowTmp = tmp_cells[row];
+            for (col in 0...COLS) {
+                final live_neighbors = countLiveNbrs(row, col);
+                final cell_value = rowCells[col];
+                final newValue = if (cell_value == 1) {
+                    (live_neighbors < 2 || live_neighbors > 3) ? 0 : 1;
+                } else {
+                    (live_neighbors == 3) ? 1 : 0;
+                };
+
+                if (newValue != rowTmp[col]) {
+                    rowTmp[col] = newValue;
+                    changed.push(row * COLS + col);
                 }
+            }
+        }
+
+        for (idx in changed) {
+            final r = Std.int(idx / COLS);
+            final c = idx - r * COLS;
+            final newVal = tmp_cells[r][c];
+            if (cells[r][c] != newVal) {
+                cells[r][c] = newVal;
+                elements[r][c].t = (newVal == 1) ? green_tile : dark_grey_tile;
             }
         }
     }
 
     override function init() {
         super.init();
-
         engine.backgroundColor = 0x373737;
         green_tile = h2d.Tile.fromColor(0x00e430, CELL_SIZE - 1, CELL_SIZE - 1);
         dark_grey_tile = h2d.Tile.fromColor(0x1d1d1d, CELL_SIZE - 1, CELL_SIZE - 1);
@@ -107,24 +129,28 @@ class Conway extends hxd.App {
         cells = [for (_ in 0...ROWS) [for (_ in 0...COLS) 0]];
         tmp_cells = [for (i in cells) [for (j in i) j]];
     }
-    
+
     override function update(dt: Float) {
         super.update(dt);
-        static var elapsedTime: Int = 0;
-        static var updateInterval: Int = 5;
+        hxd.Window.getInstance().title = 'Conway running at ${Std.int(updatesPerSecond)} fps';
 
-        if (hxd.Key.isPressed(hxd.Key.R) && !running) fillRandom();
-        if (hxd.Key.isPressed(hxd.Key.C) && !running) clearGrid();
-        if (hxd.Key.isPressed(hxd.Key.ENTER)) running = !running;
-        if (hxd.Key.isPressed(hxd.Key.S)) updateInterval += 1;
-        if (hxd.Key.isPressed(hxd.Key.F) && updateInterval >= 2) updateInterval -= 1;
+        if (hxd.Key.isReleased(hxd.Key.ENTER)) running = !running;
+        if (hxd.Key.isReleased(hxd.Key.R) && !running) fillRandom();
+        if (hxd.Key.isReleased(hxd.Key.C) && !running) clearGrid();
 
-        hxd.Window.getInstance().title = 'Conway running at ${60 / updateInterval} fps';
-        
-        elapsedTime++; 
-        if (elapsedTime >= updateInterval) { 
+        if (hxd.Key.isReleased(hxd.Key.F)) {
+            updatesPerSecond = Math.min(updatesPerSecond + 1, 240);
+            updateInterval = 1.0 / updatesPerSecond;
+        }
+        if (hxd.Key.isReleased(hxd.Key.S)) {
+            updatesPerSecond = Math.max(updatesPerSecond - 1, 1);
+            updateInterval = 1.0 / updatesPerSecond;
+        }
+
+        elapsedTime += dt;
+        while (elapsedTime >= updateInterval) {
             updateSim();
-            elapsedTime -= updateInterval; 
-        }       
+            elapsedTime -= updateInterval;
+        }
     }
 }
