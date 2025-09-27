@@ -15,10 +15,10 @@ const dark_grey = gg.rgb(55, 55, 55)
 
 struct Game {
 mut:
-	gg        &gg.Context = unsafe { nil }
-	running   bool
-	cells     [][]int
-	tmp_cells [][]int
+	gg              &gg.Context = unsafe { nil }
+	running         bool
+	cells           [][]int
+	tmp_cells       [][]int
 	updates_per_sec f64 = 12.0
 	update_interval f64 = 1.0 / 12.0
 	acc             f64
@@ -121,14 +121,14 @@ fn clear_grid(mut game Game) {
 }
 
 fn count_live_nbrs(cells [][]int, row int, column int) int {
-    c0 := (column - 1 + cols) % cols
-    c1 := column
-    c2 := (column + 1) % cols
-    r0 := cells[(row - 1 + rows) % rows]
-    r1 := cells[row]
-    r2 := cells[(row + 1) % rows]
+	c0 := (column - 1 + cols) % cols
+	c1 := column
+	c2 := (column + 1) % cols
+	r0 := cells[(row - 1 + rows) % rows]
+	r1 := cells[row]
+	r2 := cells[(row + 1) % rows]
 
-    return r0[c0] + r0[c1] + r0[c2] + r1[c0] + r1[c2] + r2[c0] + r2[c1] + r2[c2]
+	return r0[c0] + r0[c1] + r0[c2] + r1[c0] + r1[c2] + r2[c0] + r2[c1] + r2[c2]
 }
 
 fn update_sim(mut game Game) {
