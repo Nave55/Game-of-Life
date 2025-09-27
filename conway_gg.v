@@ -121,18 +121,14 @@ fn clear_grid(mut game Game) {
 }
 
 fn count_live_nbrs(cells [][]int, row int, column int) int {
-	r0 := (row - 1 + rows) % rows
-	r1 := row
-	r2 := (row + 1) % rows
-	c0 := (column - 1 + cols) % cols
-	c1 := column
-	c2 := (column + 1) % cols
+    c0 := (column - 1 + cols) % cols
+    c1 := column
+    c2 := (column + 1) % cols
+    r0 := cells[(row - 1 + rows) % rows]
+    r1 := cells[row]
+    r2 := cells[(row + 1) % rows]
 
-	row0 := cells[r0]
-	row1 := cells[r1]
-	row2 := cells[r2]
-
-	return row0[c0] + row0[c1] + row0[c2] + row1[c0] + row1[c2] + row2[c0] + row2[c1] + row2[c2]
+    return r0[c0] + r0[c1] + r0[c2] + r1[c0] + r1[c2] + r2[c0] + r2[c1] + r2[c2]
 }
 
 fn update_sim(mut game Game) {
