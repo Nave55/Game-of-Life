@@ -39,11 +39,11 @@ fn main() {
 	)
 
 	game.init_game()
-	game.last_nano = time.now().unix_nano()
 	game.gg.run()
 }
 
 fn (mut game Game) init_game() {
+	game.last_nano = time.now().unix_nano()
 	game.cells = [][]int{len: rows, init: []int{len: cols, init: 0}}
 	game.tmp_cells = [][]int{len: rows, init: []int{len: cols, init: 0}}
 }
