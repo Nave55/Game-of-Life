@@ -142,5 +142,3 @@ class Conway extends hxd.App {
         }
     }
 }
-
-
