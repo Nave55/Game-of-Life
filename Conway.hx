@@ -1,4 +1,5 @@
 class Conway extends hxd.App {
+
     static inline var CELL_SIZE = 6;
     static inline var HEIGHT = 960;
     static inline var WIDTH = 960;
@@ -52,24 +53,14 @@ class Conway extends hxd.App {
     }
 
     function countLiveNbrs(row: Int, column: Int): Int {
-        var live_neighbors = 0;
-        final r0 = (row - 1 + ROWS) % ROWS;
-        final r1 = row;
-        final r2 = (row + 1) % ROWS;
         final c0 = (column - 1 + COLS) % COLS;
         final c1 = column;
         final c2 = (column + 1) % COLS;
+        final r0 = cells[(row - 1 + ROWS) % ROWS];
+        final r1 = cells[row];
+        final r2 = cells[(row + 1) % ROWS];
 
-        live_neighbors += cells[r0][c0];
-        live_neighbors += cells[r0][c1];
-        live_neighbors += cells[r0][c2];
-        live_neighbors += cells[r1][c0];
-        live_neighbors += cells[r1][c2];
-        live_neighbors += cells[r2][c0];
-        live_neighbors += cells[r2][c1];
-        live_neighbors += cells[r2][c2];
-
-        return live_neighbors;
+        return r0[c0] + r0[c1] + r0[c2] + r1[c0] + r1[c2] + r2[c0] + r2[c1] + r2[c2];
     }
 
     function updateSim() {
@@ -153,4 +144,3 @@ class Conway extends hxd.App {
         }
     }
 }
-
