@@ -1,26 +1,26 @@
 use raylib::prelude::*;
 
-static GREY: Color = Color {
+const GREY: Color = Color {
     r: 29,
     g: 29,
     b: 29,
     a: 255,
 };
-static DARK_GREY: Color = Color {
+const DARK_GREY: Color = Color {
     r: 55,
     g: 55,
     b: 55,
     a: 255,
 };
-static GREEN: Color = Color {
-    r: 0,
+const GREEN: Color = Color {
     g: 228,
+    r: 0,
     b: 48,
     a: 255,
 };
 
-const WIDTH: i32 = 1020;
-const HEIGHT: i32 = 1020;
+const WIDTH: i32 = 960;
+const HEIGHT: i32 = 960;
 const CELL_SIZE: usize = 6;
 const ROWS: usize = (HEIGHT / CELL_SIZE as i32) as usize;
 const COLS: usize = (WIDTH / CELL_SIZE as i32) as usize;
@@ -42,7 +42,7 @@ fn main() {
         controls(&mut running, &mut rl, &mut cells, &mut fps);
         update_sim(running, &mut cells, &mut tmp_cells);
         draw_game(&mut rl, &thread, &cells, CELL_SIZE);
-        set_tile(&mut rl, &thread, fps, running);
+        set_title(&mut rl, &thread, fps, running);
     }
 }
 
@@ -83,7 +83,7 @@ fn draw_game(
     draw_cells(&mut draw, cells, ROWS, COLS, cell_size);
 }
 
-fn set_tile(rl: &mut RaylibHandle, thread: &RaylibThread, fps: u32, running: bool) {
+fn set_title(rl: &mut RaylibHandle, thread: &RaylibThread, fps: u32, running: bool) {
     if running {
         rl.set_window_title(
             thread,
@@ -103,12 +103,11 @@ fn draw_cells(
 ) {
     for row in 0..rows {
         for col in 0..cols {
-            let color: Color;
-            if cells[row][col] == 1 {
-                color = GREEN;
+            let color: Color = if cells[row][col] == 1 {
+                GREEN
             } else {
-                color = DARK_GREY;
-            }
+                DARK_GREY
+            };
             draw.draw_rectangle(
                 (col * cell_size) as i32,
                 (row * cell_size) as i32,
@@ -152,28 +151,18 @@ fn clear_grid(running: &bool, rows: usize, cols: usize, cells: &mut [[u32; COLS]
 }
 
 fn count_live_nbrs(row: usize, col: usize, cells: &[[u32; COLS]; ROWS]) -> i32 {
-    let nbr_offsets: [[i32; 2]; 8] = [
-        [-1, -1],
-        [-1, 0],
-        [-1, 1],
-        [0, -1],
-        [0, 1],
-        [1, -1],
-        [1, 0],
-        [1, 1],
-    ];
+    let c0 = (col + COLS - 1) % COLS;
+    let c1 = col;
+    let c2 = (col + 1) % COLS;
+    let r0 = (row + ROWS - 1) % ROWS;
+    let r1 = row;
+    let r2 = (row + 1) % ROWS;
 
-    let mut live_nbrs = 0;
+    let row0 = &cells[r0];
+    let row1 = &cells[r1];
+    let row2 = &cells[r2];
 
-    for offset in nbr_offsets {
-        let new_row = (row as i32 + offset[0]).rem_euclid(ROWS as i32) as usize;
-        let new_col = (col as i32 + offset[1]).rem_euclid(COLS as i32) as usize;
-        if cells[new_row][new_col] == 1 {
-            live_nbrs += 1;
-        }
-    }
-
-    live_nbrs
+    (row0[c0] + row0[c1] + row0[c2] + row1[c0] + row1[c2] + row2[c0] + row2[c1] + row2[c2]) as i32
 }
 
 fn update_sim(running: bool, cells: &mut [[u32; COLS]; ROWS], tmp_cells: &mut [[u32; COLS]; ROWS]) {
@@ -183,17 +172,17 @@ fn update_sim(running: bool, cells: &mut [[u32; COLS]; ROWS], tmp_cells: &mut [[
                 let live_nbrs = count_live_nbrs(row, col, cells);
                 let cell_value = cells[row][col];
 
-                if cell_value == 1 {
+                tmp_cells[row][col] = if cell_value == 1 {
                     if live_nbrs > 3 || live_nbrs < 2 {
-                        tmp_cells[row][col] = 0;
+                        0
                     } else {
-                        tmp_cells[row][col] = 1;
+                        1
                     }
                 } else {
                     if live_nbrs == 3 {
-                        tmp_cells[row][col] = 1;
+                        1
                     } else {
-                        tmp_cells[row][col] = 0;
+                        0
                     }
                 }
             }
