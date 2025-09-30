@@ -41,17 +41,16 @@ proc clearGrid =
       for column in 0..<COLS:
         cells[row][column] = 0
       
-proc countLiveNbrs(row, column: int): int = 
-  const nbr_offsets = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]]
-  var live_nbrs = 0
-  for offset in nbr_offsets:
-    let 
-      new_row = (row + offset[0]) %% ROWS
-      new_column = (column + offset[1]) %% COlS
-    if cells[new_row][new_column] == 1:
-      live_nbrs += 1
+proc countLiveNbrs(row, col: int): int = 
+  let
+    c0 = (col - 1 + COLS) mod COLS
+    c1 = col
+    c2 = (col + 1) mod COLS
+    r0 = cells[(row - 1 + ROWS) mod ROWS]
+    r1 = cells[row]
+    r2 = cells[(row + 1) mod ROWS]
 
-  return live_nbrs
+  return r0[c0] + r0[c1] + r0[c2] + r1[c0] + r1[c2] + r2[c0] + r2[c1] + r2[c2]
 
 proc updateSim = 
   if running:
@@ -60,16 +59,16 @@ proc updateSim =
         let live_nbrs = countLiveNbrs(row, column)
         var cell_value = cells[row][column]
 
-        if cell_value == 1:
+        tmp_cells[row][column] = if cell_value == 1:
           if live_nbrs > 3 or live_nbrs < 2:
-            tmp_cells[row][column] = 0
+            0
           else:
-            tmp_cells[row][column] = 1
+            1
         else:
           if live_nbrs == 3:
-            tmp_cells[row][column] = 1
+            1
           else:
-            tmp_cells[row][column] = 0
+            0
 
     for row in 0..<ROWS:
       for column in 0..<COLS:
