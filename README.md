@@ -1,6 +1,6 @@
 # Conway's-Game-of-Life
 Implementing Game of Life in multiple languages
 
-##### Haxe implemented in heaps enginge.
+##### Haxe implemented in heaps and raylib.
 ##### V implemented in both raylib and gg.
 ##### Everything else in raylib.
