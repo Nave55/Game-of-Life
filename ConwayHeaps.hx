@@ -1,4 +1,4 @@
-class Conway extends hxd.App {
+class ConwayHeaps extends hxd.App {
     static inline var CELL_SIZE = 6;
     static inline var HEIGHT = 960;
     static inline var WIDTH = 960;
@@ -142,3 +142,4 @@ class Conway extends hxd.App {
         }
     }
 }
+
