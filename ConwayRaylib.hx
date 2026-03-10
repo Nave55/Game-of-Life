@@ -10,10 +10,6 @@ class ConwayRaylib {
     static var   fps       = 12;
     static var   cells     = [for (i in 0...COLS) [for (j in 0...ROWS) 0]];
     static var   tmp_cells = [for (i in 0...COLS) [for (j in 0...ROWS) 0]];
-	
-    extern static inline function green(): Color { return Color.make(0,228,48,255); };
-    extern static inline function darkGrey(): Color { return Color.make(29,29,29,255); };
-    extern static inline function grey(): Color { return Color.make(55,55,55,255); };
     
     static function main() {
         Rl.initWindow(WIDTH, HEIGHT, "Conway's Game of Life");
@@ -23,9 +19,12 @@ class ConwayRaylib {
     }
 
     static function drawCells(): Void {
+        static final GREEN = Color.make(0,228,48,255);
+        static final DARK_GREY = Color.make(29,29,29,255);
+
         for (row in 0...ROWS) {
             for (column in 0...COLS) {
-                final color = cells[row][column] == 1 ? green() : darkGrey();
+                final color = cells[row][column] == 1 ? GREEN : DARK_GREY;
                 Rl.drawRectangle(
                     (column * CELL_SIZE), 
                     (row * CELL_SIZE), 
@@ -102,8 +101,9 @@ class ConwayRaylib {
     }
 
     static function drawGame() {
+        static final GREY = Color.make(55,55,55,255);
         Rl.beginDrawing();
-        Rl.clearBackground(grey());
+        Rl.clearBackground(GREY);
         drawCells();
         Rl.endDrawing();
     }
