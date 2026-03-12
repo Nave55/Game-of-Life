@@ -4,21 +4,27 @@ const
   WIDTH =     960
   HEIGHT =    960
   CELL_SIZE = 6
-  ROWS =      int(HEIGHT / CELL_SIZE)
-  COLS =      int(WIDTH / CELL_SIZE)
+  ROWS =      HEIGHT div CELL_SIZE
+  COLS =      WIDTH div CELL_SIZE
   GREY =      Color(r: 29, g: 29, b: 29, a: 255)
   DARK_GREY = Color(r: 55, g: 55, b: 55, a: 255)
+  GREEN     = Color(r: 0, g: 228, b: 48, a: 255)
 
 var 
   cells:       array[COLS, array[ROWS, int]]
   tmp_cells =  cells
   running =    false
   fps: int32 = 12
+
+iterator eachCell(): (int, int) =
+  for row in 0..<ROWS:
+    for col in 0..<COLS:
+      yield (row, col)
   
 proc drawCells = 
   for row in 0..<ROWS:
     for column in 0..<COLS:
-      let color =  if cells[row][column] == 1: Green else: DARK_GREY
+      let color = if cells[row][column] == 1: Green else: DARK_GREY
       drawRectangle(int32(column * CELL_SIZE), 
                     int32(row * CELL_SIZE),
                     int32(CELL_SIZE - 1),
@@ -27,19 +33,13 @@ proc drawCells =
 
 proc fillRandom = 
   if not running: 
-    for row in 0..<ROWS:
-      for column in 0..<COLS:
-        let random = rand(3)
-        if random == 1: 
-          cells[row][column] = 1 
-        else:
-          cells[row][column] = 0
+    for row, col in eachCell():
+      cells[row][col] = if rand(3) == 1: 1 else: 0
 
 proc clearGrid =
   if not running:
-    for row in 0..<ROWS:
-      for column in 0..<COLS:
-        cells[row][column] = 0
+    for row, col in eachCell():
+      cells[row][col] = 0
       
 proc countLiveNbrs(row, col: int): int = 
   let
@@ -54,25 +54,17 @@ proc countLiveNbrs(row, col: int): int =
 
 proc updateSim = 
   if running:
-    for row in 0..<ROWS:
-      for column in 0..<COLS:
-        let live_nbrs = countLiveNbrs(row, column)
-        var cell_value = cells[row][column]
+    for row, col in eachCell():
+      let live_nbrs = countLiveNbrs(row, col)
+      var cell_value = cells[row][col]
 
-        tmp_cells[row][column] = if cell_value == 1:
-          if live_nbrs > 3 or live_nbrs < 2:
-            0
-          else:
-            1
-        else:
-          if live_nbrs == 3:
-            1
-          else:
-            0
+      tmp_cells[row][col] = if cell_value == 1:
+        if live_nbrs > 3 or live_nbrs < 2: 0 else: 1
+      else: 
+        if live_nbrs == 3: 1 else: 0
 
-    for row in 0..<ROWS:
-      for column in 0..<COLS:
-        cells[row][column] = tmp_cells[row][column]
+    for row, col in eachCell():
+      cells[row][col] = tmp_cells[row][col]
 
 proc controls = 
   if isKeyPressed(Enter):
@@ -92,18 +84,18 @@ proc controls =
 proc drawGame = 
   beginDrawing()
   defer: endDrawing()  
-
   clearBackground(GREY)
   drawCells()
 
 proc updateGame = 
+  controls()
+  updateSim()
+  drawGame()
+  
   if running:
     setWindowTitle(&"Game of Life is Running at {fps}")
   else:
     setWindowTitle("Game of Life is Paused")
-  controls()
-  updateSim()
-  drawGame()
 
 block:
   initWindow(WIDTH, HEIGHT, "Game of Life")
