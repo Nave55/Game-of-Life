@@ -24,12 +24,13 @@ iterator eachCell(): (int, int) =
 proc drawCells = 
   for row in 0..<ROWS:
     for column in 0..<COLS:
-      let color = if cells[row][column] == 1: Green else: DARK_GREY
-      drawRectangle(int32(column * CELL_SIZE), 
-                    int32(row * CELL_SIZE),
-                    int32(CELL_SIZE - 1),
-                    int32(CELL_SIZE - 1),
-                    color)
+      drawRectangle(
+        int32(column * CELL_SIZE), 
+        int32(row * CELL_SIZE),
+        int32(CELL_SIZE - 1),
+        int32(CELL_SIZE - 1),
+        if cells[row][column] == 1: Green else: DARK_GREY
+      )
 
 proc fillRandom = 
   if not running: 
@@ -91,7 +92,7 @@ proc updateGame =
   controls()
   updateSim()
   drawGame()
-  
+
   if running:
     setWindowTitle(&"Game of Life is Running at {fps}")
   else:
