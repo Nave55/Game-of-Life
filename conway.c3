@@ -14,10 +14,10 @@ int[COLS][ROWS] tmp_cells = {};
 
 fn void main(String[] args) {
 	init_window(WIDTH, HEIGHT, "Conway's Game of Life");
+	defer close_window();
     set_target_fps(fps);
 
     while (!window_should_close()) update_game();
-    close_window();
 }
 
 fn void draw_cells() {
@@ -103,9 +103,9 @@ fn void game_controls() {
 
 fn void draw_game(){
     begin_drawing();
+	defer end_drawing();
     clear_background(DARK_GREY);
     draw_cells();
-    end_drawing();
 }
 
 fn void update_game() {
