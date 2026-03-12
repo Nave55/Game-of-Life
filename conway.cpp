@@ -26,10 +26,14 @@ auto main() -> int {
 auto drawCells() -> void {
 	for (int row {0}; row < ROWS; row++) {
 		for (int column {0}; column < COLS; column++) {
-			Color color;
-			if (cells[row][column] == 1) color = GREEN;
-            else color = DARK_GREY;
-			DrawRectangle(int(column * CELL_SIZE), int(row * CELL_SIZE), int(CELL_SIZE - 1), int(CELL_SIZE - 1), color);
+			
+			DrawRectangle(
+				int(column * CELL_SIZE), 
+				int(row * CELL_SIZE), 
+				int(CELL_SIZE - 1), 
+				int(CELL_SIZE - 1), 
+				(cells[row][column] == 1) ? GREEN : DARK_GREY
+			);
 		}
 	}
 }
@@ -38,9 +42,7 @@ auto fillRandom() -> void {
 	if (!running) {
 		for (int row {0}; row < ROWS; row++) {
 		    for (int column {0}; column < COLS; column++) {
-				auto random = GetRandomValue(0, 3);
-				if (random == 1) cells[row][column] = 1;
-				else cells[row][column] = 0;
+				cells[row][column] = (GetRandomValue(0, 3) == 1) ? 1 : 0;
 			}
 		}
 	}
@@ -75,12 +77,9 @@ auto updateSim() -> void {
 				auto cell_value = cells[row][column];
 
 				if (cell_value == 1) {
-					if (live_nbrs > 3 || live_nbrs < 2) tmp_cells[row][column] = 0;
-					else tmp_cells[row][column] = 1;
-				}
-				else {
-					if (live_nbrs == 3) tmp_cells[row][column] = 1;
-					else tmp_cells[row][column] = 0;
+					tmp_cells[row][column] = (live_nbrs > 3 || live_nbrs < 2) ? 0 : 1;
+				} else {
+					tmp_cells[row][column] = (live_nbrs == 3) ? 1 : 0;
 				}
 			}
 		}
