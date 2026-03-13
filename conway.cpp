@@ -14,10 +14,7 @@ auto fps =                  int(12);
 int cells[ROWS][COLS] =     {0};
 int tmp_cells[ROWS][COLS] = {0};
 
-struct Cell {
-	int r = 0;
-	int c = 0;
-};
+struct Cell { int r = 0; int c = 0; };
 
 auto updateGame() -> void;
 
