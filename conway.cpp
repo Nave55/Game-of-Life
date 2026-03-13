@@ -14,7 +14,6 @@ auto fps =                  int(12);
 int cells[ROWS][COLS] =     {0};
 int tmp_cells[ROWS][COLS] = {0};
 
-struct Cell { int r = 0; int c = 0; };
 
 auto updateGame() -> void;
 
@@ -26,41 +25,34 @@ auto main() -> int {
     CloseWindow();
 }
 
-auto eachCell() -> std::array<Cell, ROWS * COLS> {
-	std::array<Cell, ROWS * COLS> arr;
+auto drawCells() -> void {
 	for (int r {0}; r < ROWS; r++) {
 		for (int c {0}; c < COLS; c++) 
-			arr[(r * COLS) + c] = Cell{r, c};
-	}
-
-	return arr;
-}
-
-auto drawCells() -> void {
-	for (const auto &i : eachCell()) {
-		DrawRectangle(
-			int(i.c * CELL_SIZE), 
-			int(i.r * CELL_SIZE), 
-			int(CELL_SIZE - 1), 
-			int(CELL_SIZE - 1), 
-			(cells[i.r][i.c] == 1) ? GREEN : DARK_GREY
-		);
+			DrawRectangle(
+				int(c * CELL_SIZE), 
+				int(r * CELL_SIZE), 
+				int(CELL_SIZE - 1), 
+				int(CELL_SIZE - 1), 
+				(cells[r][c] == 1) ? GREEN : DARK_GREY
+			);
 	}		
 }
 
 auto fillRandom() -> void {
 	if (!running) {
-		for (const auto &i : eachCell()) {
-			cells[i.r][i.c] = (GetRandomValue(0, 3) == 1) ? 1 : 0;
+		for (int r {0}; r < ROWS; r++) {
+			for (int c {0}; c < COLS; c++) 
+				cells[r][c] = (GetRandomValue(0, 3) == 1) ? 1 : 0;
 		}
 	}
 }
 
 auto clearGrid() -> void {
 	if (!running) {
-		for (const auto &i : eachCell()) {
-				cells[i.r][i.c] = 0;
-			}
+		for (int r {0}; r < ROWS; r++) {
+			for (int c {0}; c < COLS; c++) 
+				cells[r][c] = 0;
+		}
 	}
 }
 
@@ -77,19 +69,22 @@ auto countLiveNbrs(int row, int col) -> int {
 
 auto updateSim() -> void {
 	if (running) {
-		for (const auto &i : eachCell()) {
-			auto live_nbrs = countLiveNbrs(i.r, i.c);
-			auto cell_value = cells[i.r][i.c];
+		for (int r {0}; r < ROWS; r++) {
+			for (int c {0}; c < COLS; c++) {
+				auto live_nbrs = countLiveNbrs(r, c);
+				auto cell_value = cells[r][c];
 
-			if (cell_value == 1) {
-				tmp_cells[i.r][i.c] = (live_nbrs > 3 || live_nbrs < 2) ? 0 : 1;
-			} else {
-				tmp_cells[i.r][i.c] = (live_nbrs == 3) ? 1 : 0;
+				if (cell_value == 1) {
+					tmp_cells[r][c] = (live_nbrs > 3 || live_nbrs < 2) ? 0 : 1;
+				} else {
+					tmp_cells[r][c] = (live_nbrs == 3) ? 1 : 0;
+				}
 			}
 		}
 
-		for (const auto &i : eachCell()) {
-			cells[i.r][i.c] = tmp_cells[i.r][i.c];
+		for (int r {0}; r < ROWS; r++) {
+			for (int c {0}; c < COLS; c++) 
+				cells[r][c] = tmp_cells[r][c];
 		}
 	}
 }
