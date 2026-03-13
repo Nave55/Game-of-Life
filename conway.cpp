@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include <array>
 
 const auto WIDTH =     960;
 const auto HEIGHT =    960;
@@ -10,8 +11,13 @@ const Color DARK_GREY  {55, 55, 55, 255};
 
 bool running =              false;
 auto fps =                  int(12);
-int cells[COLS][ROWS] =     {0};
-int tmp_cells[COLS][ROWS] = {0};
+int cells[ROWS][COLS] =     {0};
+int tmp_cells[ROWS][COLS] = {0};
+
+struct Cell {
+	int r = 0;
+	int c = 0;
+};
 
 auto updateGame() -> void;
 
@@ -23,38 +29,41 @@ auto main() -> int {
     CloseWindow();
 }
 
-auto drawCells() -> void {
-	for (int row {0}; row < ROWS; row++) {
-		for (int column {0}; column < COLS; column++) {
-			
-			DrawRectangle(
-				int(column * CELL_SIZE), 
-				int(row * CELL_SIZE), 
-				int(CELL_SIZE - 1), 
-				int(CELL_SIZE - 1), 
-				(cells[row][column] == 1) ? GREEN : DARK_GREY
-			);
-		}
+auto eachCell() -> std::array<Cell, ROWS * COLS> {
+	std::array<Cell, ROWS * COLS> arr;
+	for (int r {0}; r < ROWS; r++) {
+		for (int c {0}; c < COLS; c++) 
+			arr[(r * COLS) + c] = Cell{r, c};
 	}
+
+	return arr;
+}
+
+auto drawCells() -> void {
+	for (const auto &i : eachCell()) {
+		DrawRectangle(
+			int(i.c * CELL_SIZE), 
+			int(i.r * CELL_SIZE), 
+			int(CELL_SIZE - 1), 
+			int(CELL_SIZE - 1), 
+			(cells[i.r][i.c] == 1) ? GREEN : DARK_GREY
+		);
+	}		
 }
 
 auto fillRandom() -> void {
 	if (!running) {
-		for (int row {0}; row < ROWS; row++) {
-		    for (int column {0}; column < COLS; column++) {
-				cells[row][column] = (GetRandomValue(0, 3) == 1) ? 1 : 0;
-			}
+		for (const auto &i : eachCell()) {
+			cells[i.r][i.c] = (GetRandomValue(0, 3) == 1) ? 1 : 0;
 		}
 	}
 }
 
 auto clearGrid() -> void {
 	if (!running) {
-		for (int row {0}; row < ROWS; row++) {
-		    for (int column {0}; column < COLS; column++) {
-				cells[row][column] = 0;
+		for (const auto &i : eachCell()) {
+				cells[i.r][i.c] = 0;
 			}
-		}
 	}
 }
 
@@ -71,23 +80,19 @@ auto countLiveNbrs(int row, int col) -> int {
 
 auto updateSim() -> void {
 	if (running) {
-		for (int row {0}; row < ROWS; row++) {
-		    for (int column {0}; column < COLS; column++) {
-				auto live_nbrs = countLiveNbrs(row, column);
-				auto cell_value = cells[row][column];
+		for (const auto &i : eachCell()) {
+			auto live_nbrs = countLiveNbrs(i.r, i.c);
+			auto cell_value = cells[i.r][i.c];
 
-				if (cell_value == 1) {
-					tmp_cells[row][column] = (live_nbrs > 3 || live_nbrs < 2) ? 0 : 1;
-				} else {
-					tmp_cells[row][column] = (live_nbrs == 3) ? 1 : 0;
-				}
+			if (cell_value == 1) {
+				tmp_cells[i.r][i.c] = (live_nbrs > 3 || live_nbrs < 2) ? 0 : 1;
+			} else {
+				tmp_cells[i.r][i.c] = (live_nbrs == 3) ? 1 : 0;
 			}
 		}
 
-		for (int row {0}; row < ROWS; row++) {
-		    for (int column {0}; column < COLS; column++) {
-				cells[row][column] = tmp_cells[row][column];
-			}
+		for (const auto &i : eachCell()) {
+			cells[i.r][i.c] = tmp_cells[i.r][i.c];
 		}
 	}
 }
@@ -101,8 +106,8 @@ auto gameControls() -> void {
 		if (IsKeyPressed(KEY_S) && fps > 5) fps -= 2;
 		SetTargetFPS(fps);
 	}
-	
 }
+
 auto draw_game() -> void {
     BeginDrawing();
     ClearBackground(GREY);
