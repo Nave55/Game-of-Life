@@ -1,0 +1,150 @@
+width :: CInt
+width = 960
+
+height :: CInt
+height = 960
+
+cellSize :: CInt
+cellSize = 6
+
+rows :: CInt
+rows = height `div` cellSize
+
+cols :: CInt
+cols = width `div` cellSize
+
+green :: Color
+green = color 0 228 48 255
+
+grey :: Color
+grey = color 55 55 55 255
+
+darkGrey :: Color
+darkGrey = color 29 29 29 255
+
+whenM :: Monad m => m Bool -> m () -> m ()
+whenM mb action = mb >>= \b -> when b action
+
+makeGrid :: IO (IOUArray (CInt, CInt) Int)
+makeGrid = do
+  newArray ((0,0),(rows-1,cols-1)) 0
+
+type Grid = IOUArray (CInt, CInt) Int
+
+drawCells :: Grid -> IO ()
+drawCells g = do
+  forM_ [0 .. rows-1] $ \row ->
+    forM_ [0 .. cols-1] $ \col -> do
+      v <- readArray g (row, col)
+      let color = if v == 1 then green else darkGrey
+      drawRectangle
+        (col * cellSize)
+        (row * cellSize)
+        (cellSize - 1)
+        (cellSize - 1)
+        color
+
+fillRandom :: Grid -> Bool -> IO ()
+fillRandom _ True = pure ()
+fillRandom g False = do
+  forM_ [0 .. rows-1] $ \row ->
+    forM_ [0 .. cols-1] $ \col -> do
+      r_val <- getRandomValue 0 3
+      writeArray g (row, col) $ if r_val == 1 then 1 else 0
+
+clearGrid :: Grid -> Bool -> IO ()
+clearGrid _ True = pure ()
+clearGrid g False = do
+  forM_ [0 .. rows-1] $ \row ->
+    forM_ [0 .. cols-1] $ \col -> do
+      writeArray g (row, col) 0
+
+
+countLiveNbrs :: Grid -> CInt -> CInt -> IO Int
+countLiveNbrs g row col = do
+  let c0 = (col - 1 + cols) `mod` cols
+      c1 = col
+      c2 = (col + 1) `mod` cols
+
+      r0 = (row - 1 + rows) `mod` rows
+      r1 = row
+      r2 = (row + 1) `mod` rows
+
+  a <- readArray g (r0, c0)
+  b <- readArray g (r0, c1)
+  c <- readArray g (r0, c2)
+
+  d <- readArray g (r1, c0)
+  e <- readArray g (r1, c2)
+
+  f <- readArray g (r2, c0)
+  g' <- readArray g (r2, c1)
+  h <- readArray g (r2, c2)
+
+  pure (a + b + c + d + e + f + g' + h)
+
+updateSim :: Grid -> Grid -> Bool -> IO ()
+updateSim _ _ False = pure ()
+updateSim g t True  = do
+  forM_ [0 .. rows-1] $ \row ->
+    forM_ [0 .. cols-1] $ \col -> do
+      live <- countLiveNbrs g row col
+      val  <- readArray g (row, col)
+      let newVal
+            | val == 1 = if live < 2 || live > 3 then 0 else 1
+            | live == 3 = 1
+            | otherwise = 0
+      writeArray t (row, col) newVal
+
+gameControls :: Grid -> Bool -> CInt -> IO (Bool, CInt)
+gameControls grid run fps = do
+  whenM (isKeyPressed' R) $ fillRandom grid run
+  whenM (isKeyPressed' C) $ clearGrid grid run
+
+  enter <- isKeyPressed' Enter
+  fKey  <- isKeyPressed' F
+  sKey  <- isKeyPressed' S
+
+  let fps'
+        | fKey      = fps + 2
+        | sKey      = fps - 2
+        | otherwise = fps
+
+  when (fKey || sKey) $ setTargetFps (fromIntegral fps')
+  let run' = if enter then not run else run
+  pure (run', fps')
+
+drawGame :: Grid -> IO ()
+drawGame grid = do
+  beginDrawing
+  clearBackground grey
+  drawCells grid
+  endDrawing
+
+updateGame :: Grid -> Grid -> Bool -> CInt -> IO (Grid, Grid, Bool, CInt)
+updateGame g t run fps = do
+  (run', fps') <- gameControls g run fps
+  drawGame g
+  if run'
+    then do
+      setWindowTitle' $
+        "Game of Life is Runnin at" ++ show fps' ++ " fps"
+      updateSim g t True
+      pure (t, g, run', fps')
+    else do
+      setWindowTitle' "Game of Life is Paused"
+      pure (g, t, run', fps')
+
+mainLoop g t run fps = do
+  quit <- windowShouldClose'
+  unless quit $ do
+    (g', t', run', fps') <- updateGame g t run fps
+    mainLoop g' t' run' fps'
+
+main = do
+  initWindow' 960 960 "Conway"
+  setTargetFps 12
+  grid <- makeGrid
+  t_grid <- makeGrid
+  mainLoop grid t_grid False 12
+  closeWindow
