@@ -109,7 +109,7 @@ gameControls grid run fps = do
         | sKey      = fps - 2
         | otherwise = fps
 
-  when (fKey || sKey) $ setTargetFps (fromIntegral fps')
+  when (fKey || sKey) $ setTargetFps fps'
   let run' = if enter then not run else run
   pure (run', fps')
 
