@@ -127,7 +127,7 @@ updateGame g t run fps = do
   if run'
     then do
       setWindowTitle' $
-        "Conway's Game of Life is Runnin at " ++ show fps' ++ " fps"
+        "Conway's Game of Life is Running at " ++ show fps' ++ " fps"
       updateSim g t True
       pure (t, g, run', fps')
     else do
