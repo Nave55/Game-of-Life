@@ -1,3 +1,98 @@
+{-# LANGUAGE ForeignFunctionInterface #-}
+
+module Main where
+
+import Foreign.C.Types
+import Foreign.C.ConstPtr
+import Foreign.C.String
+import Control.Monad
+import Foreign.Storable
+import Data.Word
+import Data.Bits ((.|.), shiftL)
+import Data.Array.IO
+
+type Color = CUInt
+
+color :: Word8 -> Word8 -> Word8 -> Word8 -> Color
+color r g b a =
+    fromIntegral r .|.
+    (fromIntegral g `shiftL` 8)  .|.
+    (fromIntegral b `shiftL` 16) .|.
+    (fromIntegral a `shiftL` 24)
+
+data Keys
+  = Space
+  | C
+  | F
+  | R
+  | S
+  | Enter
+  deriving (Enum, Show)
+
+key :: Keys -> CInt
+key C     = 67
+key F     = 70
+key R     = 82
+key S     = 83
+key Enter = 257
+
+foreign import ccall "InitWindow"
+  initWindow :: CInt -> CInt -> CString -> IO ()
+
+foreign import ccall "CloseWindow"
+  closeWindow :: IO ()
+
+foreign import ccall "WindowShouldClose"
+  windowShouldClose :: IO CBool
+
+foreign import ccall "SetTargetFPS"
+  setTargetFps :: CInt -> IO ()
+
+foreign import ccall "BeginDrawing"
+  beginDrawing :: IO ()
+
+foreign import ccall "EndDrawing"
+  endDrawing :: IO ()
+
+foreign import ccall "ClearBackground"
+  clearBackground :: CUInt -> IO ()
+
+foreign import ccall "DrawRectangle"
+  drawRectangle :: CInt -> CInt -> CInt -> CInt -> CUInt -> IO ()
+
+foreign import ccall "IsKeyPressed"
+  isKeyPressed :: CInt -> IO CBool
+
+foreign import ccall "SetWindowTitle"
+  setWindowTitle :: CString -> IO ()
+
+foreign import ccall "GetRandomValue"
+  getRandomValue :: CInt -> CInt -> IO CInt
+
+initWindow' :: Int -> Int -> String -> IO ()
+initWindow' w h title =
+  withCString title $ \t ->
+    initWindow (fromIntegral w) (fromIntegral h) t
+
+windowShouldClose' :: IO Bool
+windowShouldClose' = do
+  r <- windowShouldClose
+  pure (r /= 0)
+
+isKeyPressed' :: Keys -> IO Bool
+isKeyPressed' k = do
+  r <- isKeyPressed (key k)
+  pure (r /= 0)
+
+getRandomValue' :: Int -> Int -> IO Int
+getRandomValue' a b = do
+  r <- getRandomValue (fromIntegral a) (fromIntegral b)
+  pure (fromIntegral r)
+
+setWindowTitle' :: String -> IO ()
+setWindowTitle' title =
+  withCString title $ \t -> setWindowTitle t
+
 width :: CInt
 width = 960
 
@@ -127,7 +222,7 @@ updateGame g t run fps = do
   if run'
     then do
       setWindowTitle' $
-        "Conway's Game of Life is Runnin at" ++ show fps' ++ " fps"
+        "Conway's Game of Life is Runnin at " ++ show fps' ++ " fps"
       updateSim g t True
       pure (t, g, run', fps')
     else do
@@ -141,7 +236,7 @@ mainLoop g t run fps = do
     mainLoop g' t' run' fps'
 
 main = do
-  initWindow' 960 960 "Conway's Game of Lie"
+  initWindow' 960 960 "Conway's Game of Life"
   setTargetFps 12
   grid <- makeGrid
   t_grid <- makeGrid
