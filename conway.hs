@@ -59,7 +59,6 @@ clearGrid g False = do
     forM_ [0 .. cols-1] $ \col -> do
       writeArray g (row, col) 0
 
-
 countLiveNbrs :: Grid -> CInt -> CInt -> IO Int
 countLiveNbrs g row col = do
   let c0 = (col - 1 + cols) `mod` cols
