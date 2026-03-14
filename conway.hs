@@ -1,7 +1,7 @@
 module Main where
 
-import Control.Monad
-import Data.Array.IO
+import Control.Monad (when, unless, forM_)
+import Data.Array.IO (IOUArray, readArray, writeArray, newArray)
 
 width :: CInt
 width = 960
