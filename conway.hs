@@ -1,3 +1,8 @@
+module Main where
+
+import Control.Monad
+import Data.Array.IO
+
 width :: CInt
 width = 960
 
