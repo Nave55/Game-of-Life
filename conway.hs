@@ -25,11 +25,11 @@ darkGrey = color 29 29 29 255
 whenM :: Monad m => m Bool -> m () -> m ()
 whenM mb action = mb >>= \b -> when b action
 
-makeGrid :: IO (IOUArray (CInt, CInt) Int)
+type Grid = IOUArray (CInt, CInt) Int
+
+makeGrid :: IO Grid
 makeGrid = do
   newArray ((0,0),(rows-1,cols-1)) 0
-
-type Grid = IOUArray (CInt, CInt) Int
 
 drawCells :: Grid -> IO ()
 drawCells g = do
@@ -128,11 +128,11 @@ updateGame g t run fps = do
   if run'
     then do
       setWindowTitle' $
-        "Game of Life is Runnin at" ++ show fps' ++ " fps"
+        "Conway's Game of Life is Runnin at" ++ show fps' ++ " fps"
       updateSim g t True
       pure (t, g, run', fps')
     else do
-      setWindowTitle' "Game of Life is Paused"
+      setWindowTitle' "Conway's Game of Life is Paused"
       pure (g, t, run', fps')
 
 mainLoop g t run fps = do
@@ -142,7 +142,7 @@ mainLoop g t run fps = do
     mainLoop g' t' run' fps'
 
 main = do
-  initWindow' 960 960 "Conway"
+  initWindow' 960 960 "Conway's Game of Lie"
   setTargetFps 12
   grid <- makeGrid
   t_grid <- makeGrid
