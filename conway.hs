@@ -33,8 +33,7 @@ whenM mb action = mb >>= \b -> when b action
 type Grid = IOUArray (CInt, CInt) Int
 
 makeGrid :: IO Grid
-makeGrid = do
-  newArray ((0,0),(rows-1,cols-1)) 0
+makeGrid = newArray ((0,0),(rows-1,cols-1)) 0
 
 drawCells :: Grid -> IO ()
 drawCells g = do
@@ -151,4 +150,6 @@ main = do
   grid <- makeGrid
   t_grid <- makeGrid
   mainLoop grid t_grid False 12
+  closeWindow
+
   closeWindow
