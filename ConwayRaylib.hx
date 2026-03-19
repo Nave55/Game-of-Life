@@ -6,93 +6,118 @@ class ConwayRaylib {
     static final CELL_SIZE = 6;
     static final ROWS      = Std.int(HEIGHT / CELL_SIZE);
     static final COLS      = Std.int(WIDTH / CELL_SIZE);
-    static var   running   = false;
-    static var   fps       = 12;
-    static var   cells     = [for (i in 0...COLS) [for (j in 0...ROWS) 0]];
-    static var   tmp_cells = [for (i in 0...COLS) [for (j in 0...ROWS) 0]];
-    
+    static final SIZE      = ROWS * COLS;
+    static final INDEX     = [for (i in 0...ROWS) for (j in 0...COLS) {row: i, col: j}];
+    static final NEIGHBORS = makeNeighbors();
+
+    static var running     = false;
+    static var fps         = 12;
+    static var cells       = [for (_ in 0...SIZE) 0];
+    static var tmp_cells   = [for (_ in 0...SIZE) 0];
+
     static function main() {
-        Rl.initWindow(WIDTH, HEIGHT, "Conway's Game of Life");
+        Rl.initWindow(WIDTH, HEIGHT, "Conway's Game of Life (Flat)");
         Rl.setTargetFps(fps);
         while (!Rl.windowShouldClose()) updateGame();
         Rl.closeWindow();
     }
 
+    @:pure 
+    static function makeNeighbors(): Array<Array<Int>> {
+        var out = new Array<Array<Int>>();
+        out.resize(SIZE);
+
+        for (i in 0...SIZE) {
+            final rc = INDEX[i];
+            final r = rc.row;
+            final c = rc.col;
+
+            final r0 = (r - 1 + ROWS) % ROWS;
+            final r1 = r;
+            final r2 = (r + 1) % ROWS;
+
+            final c0 = (c - 1 + COLS) % COLS;
+            final c1 = c;
+            final c2 = (c + 1) % COLS;
+
+            out[i] = [
+                r0 * COLS + c0,
+                r0 * COLS + c1,
+                r0 * COLS + c2,
+                r1 * COLS + c0,
+                r1 * COLS + c2,
+                r2 * COLS + c0,
+                r2 * COLS + c1,
+                r2 * COLS + c2
+            ];
+        }
+
+        return out;
+    }
+
     static function drawCells(): Void {
         static final GREEN = Color.make(0,228,48,255);
-        static final DARK_GREY = Color.make(29,29,29,255);
+        static final DARK  = Color.make(29,29,29,255);
 
-        for (row in 0...ROWS) {
-            for (column in 0...COLS) {
-                final color = cells[row][column] == 1 ? GREEN : DARK_GREY;
-                Rl.drawRectangle(
-                    (column * CELL_SIZE), 
-                    (row * CELL_SIZE), 
-                    (CELL_SIZE - 1), 
-                    (CELL_SIZE - 1), 
-                    color
-                );
-		    }
-	    }
-    }
+        for (i in 0...SIZE) {
+            final rc = INDEX[i];
+            final color = cells[i] == 1 ? GREEN : DARK;
 
-    static function fillRandom(): Void {
-        if (!running) {
-            for (row in 0...ROWS) {
-                for (column in 0...COLS) {
-                    cells[row][column] = Std.random(3) == 1 ? 1 : 0;
-                }
-            }
+            Rl.drawRectangle(
+                rc.col * CELL_SIZE,
+                rc.row * CELL_SIZE,
+                CELL_SIZE - 1,
+                CELL_SIZE - 1,
+                color
+            );
         }
     }
 
-    static function clearGrid(): Void {
+    static function fillRandom():Void {
         if (!running) {
-            for (row in 0...ROWS) {
-                for (column in 0...COLS) {
-                    cells[row][column] = 0;
-                }
-            }
+            for (i in 0...SIZE)
+                cells[i] = Std.random(3) == 1 ? 1 : 0;
         }
     }
 
-    static function countLiveNbrs(row: Int, col: Int): Int {
-        final c0 = (col - 1 + COLS) % COLS;
-        final c1 = col;
-        final c2 = (col + 1) % COLS;
-        final r0 = cells[(row - 1 + ROWS) % ROWS];
-        final r1 = cells[row];
-        final r2 = cells[(row + 1) % ROWS];
-
-        return r0[c0] + r0[c1] + r0[c2] + r1[c0] + r1[c2] + r2[c0] + r2[c1] + r2[c2];
+    static function clearGrid():Void {
+        if (!running) {
+            for (i in 0...SIZE)
+                cells[i] = 0;
+        }
     }
 
-    static function updateSim(): Void {
+    static inline function countLiveNbrs(idx:Int): Int {
+        final n = NEIGHBORS[idx];
+        return cells[n[0]] + cells[n[1]] + cells[n[2]] +
+               cells[n[3]] + cells[n[4]] +
+               cells[n[5]] + cells[n[6]] + cells[n[7]];
+    }
+
+    static function updateSim():Void {
         if (running) {
-            for (row in 0...ROWS) {
-                for (column in 0...COLS) {
-                    final live_nbrs = countLiveNbrs(row, column);
-                    final cell_value = cells[row][column];
+            for (i in 0...SIZE) {
+                final live = countLiveNbrs(i);
+                final cell = cells[i];
 
-                    if (cell_value == 1) {
-                        tmp_cells[row][column] = (live_nbrs > 3 || live_nbrs < 2) ? 0 : 1;
-                    } else tmp_cells[row][column] = (live_nbrs == 3) ? 1 : 0;
-                    
-                }
+                tmp_cells[i] =
+                    if (cell == 1)
+                        (live < 2 || live > 3) ? 0 : 1
+                    else
+                        (live == 3) ? 1 : 0;
             }
 
-            for (row in 0...ROWS) {
-                for (column in 0...COLS) {
-                    cells[row][column] = tmp_cells[row][column];
-                }
-            }
+            final old = cells;
+            cells = tmp_cells;
+            tmp_cells = old;
         }
     }
 
-    static function gameControls(): Void {
+    static function gameControls():Void {
         if (Rl.isKeyPressed(Key.ENTER)) running = !running;
         if (Rl.isKeyPressed(Key.R)) fillRandom();
         if (Rl.isKeyPressed(Key.C)) clearGrid();
+
         if (Rl.isKeyPressed(Key.F) || Rl.isKeyPressed(Key.S)) {
             if (Rl.isKeyPressed(Key.F)) fps += 2;
             if (Rl.isKeyPressed(Key.S) && fps > 5) fps -= 2;
@@ -108,12 +133,14 @@ class ConwayRaylib {
         Rl.endDrawing();
     }
 
-    static function updateGame(): Void {
+    static function updateGame():Void {
         gameControls();
         updateSim();
         drawGame();
 
-        if (running) Rl.setWindowTitle('Game of Life is Running at ${fps} fps');
-	    else Rl.setWindowTitle("Game of Life is Paused");
+        if (running)
+            Rl.setWindowTitle('Game of Life Running at ${fps} fps');
+        else
+            Rl.setWindowTitle("Game of Life Paused");
     }
 }
