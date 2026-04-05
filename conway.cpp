@@ -14,7 +14,6 @@ int fps =                   12;
 int cells[ROWS][COLS] =     {0};
 int tmp_cells[ROWS][COLS] = {0};
 
-
 auto updateGame() -> void;
 
 auto main() -> int {
