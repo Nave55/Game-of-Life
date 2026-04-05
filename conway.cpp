@@ -1,16 +1,16 @@
 #include "raylib.h"
 #include <array>
 
-const auto WIDTH =     960;
-const auto HEIGHT =    960;
-const auto CELL_SIZE = 6;
-const auto ROWS =      int(HEIGHT / CELL_SIZE);
-const auto COLS =      int(WIDTH / CELL_SIZE);
-const Color GREY       {29, 29, 29, 255};
-const Color DARK_GREY  {55, 55, 55, 255};
+const int WIDTH =     960;
+const int HEIGHT =    960;
+const int CELL_SIZE = 6;
+const int ROWS =      HEIGHT / CELL_SIZE;
+const int COLS =      WIDTH / CELL_SIZE;
+const Color GREY      {29, 29, 29, 255};
+const Color DARK_GREY {55, 55, 55, 255};
 
 bool running =              false;
-auto fps =                  int(12);
+int fps =                   12;
 int cells[ROWS][COLS] =     {0};
 int tmp_cells[ROWS][COLS] = {0};
 
